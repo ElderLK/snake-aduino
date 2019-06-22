@@ -50,6 +50,10 @@
 ![my snake diagram](https://res.cloudinary.com/elderlk/image/upload/v1561227840/circuit-diagram-snake_lxfg3d.png "Snake Diagram")
 
 
+## Demonstration
+<a href="https://res.cloudinary.com/elderlk/video/upload/v1561243898/desmonstration_snake_qtgyx5.mp4"><img src="https://res.cloudinary.com/elderlk/image/upload/v1561244245/demonstration_snake_x6qheh.gif" alt="Build Status"></a>
+
+
 ## Fontes
  <ul class="list">
          <li>
@@ -59,6 +63,9 @@
              <a href="https://maxpromer.github.io/LCD-Character-Creator/">LCD Custom Character Generator</a>
          </li>
          <li>
-            <a href="https://www.youtube.com/watch?v=IkTK6WMlMs4">Jogo Snake</a>
+            <a href="https://www.youtube.com/watch?v=IkTK6WMlMs4">Game Snake in Arduino Example</a>
+         </li>
+         <li>
+            <a href="https://www.instructables.com/id/Arduino-YL-44-Buzzer-module/">Buzzer</a>
          </li>
  </ul>
