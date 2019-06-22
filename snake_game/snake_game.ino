@@ -29,20 +29,20 @@ boolean gameOver, gameStarted;
 int pc,pr;
 int key, oldkey; 
 int dir, olddir; // 1 - Down, 2 - Up, 3 - Left, 4 - Right
-int selectedLevel = 1, levels = 3;
+int selectedLevel = 0, levels = 2;
 int gameSpeed, collected;
-unsigned long timer, timeNow;
+unsigned long timer;
 
 
 boolean levelz[3][2][16] = {
 {{true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true},
 {true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true}},
  
-{{true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true},
-{true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,true}},
+{{false,false,false,false,false,true,false,false,false,true,false,false,false,false,false,true},
+{false,true,false,true,false,false,false,false,false,false,false,false,true,false,false,false}},
  
-{{true,false,false,false,true,false,false,false,false,false,false,true,false,false,false,true},
-{true,false,false,false,false,false,false,false,true,false,false,false,false,false,false,true}}
+{{true,false,false,false,true,false,false,false,true,false,false,false,false,false,false,true},
+{false,false,true,false,false,false,false,false,false,false,true,false,true,false,false,false}},
 };
 
 
@@ -80,9 +80,10 @@ void createSnake(int n) // n = size of snake
   }
 }
 
+
+
 void startMenu()
 {
-  int i;
   byte mySnake[8][8] = { { B00000, B00000, B00011, B00110, B01100, B11000, B00000, },
                          { B00000, B11000, B11110, B00011, B00001, B00000, B00000, },
                          { B00000, B00000, B00000, B00000, B00000, B11111, B01110, },
@@ -90,23 +91,37 @@ void startMenu()
                          { B00000, B11100, B11111, B00001, B00000, B00000, B00000, },
                          { B00000, B00000, B00000, B11000, B01101, B00111, B00000, },
                          { B00000, B00000, B01110, B11011, B11111, B01110, B00000, },
-                         { B00000, B00000, B00000, B01000, B10000, B01000, B00000, } };
+                         { B00000, B00000, B00000, B01000, B10000, B01000, B00000, }, };          
+
+  byte logoUtf[4][8] = {  { B11011, B11011, B11011, B11011, B11011, B11011, B11111, B01110, },
+                          { B11111, B11000, B01011, B01011, B01010, B01010, B01010, B01010, },
+                          { B11000, B00000, B11000, B11000, B00111, B00101, B00111, B00100, },
+                          { B00000, B00000, B00000, B00000, B11100, B10100, B11000, B10100, } };   
                          
   gameOver = gameStarted = false;
   key = oldkey = 0;
   olddir = 0;
   dir = 3;
-  selectedLevel = 1;
+  selectedLevel = 0;
  
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Select level: 1");
-  for( i = 0; i < 8; i++)
+  for(int i = 0; i < 12; i++)
   {
-    lcd.createChar(i,mySnake[i]);
-    lcd.setCursor(i+4,1);
-    lcd.write(byte(i));
+    if( i < 8){
+       lcd.createChar(i, mySnake[i]);
+    }else {
+       lcd.createChar(i, logoUtf[i - 8]);
+    }
+      
   }
+
+ for(int i = 0; i < 12; i++){
+    lcd.setCursor(i + 2, 1);
+    lcd.write(byte(i));
+ }
+ 
   collected = 0;
   gameSpeed = 8;
   createSnake(3);
@@ -116,6 +131,7 @@ void startMenu()
 void setup() {
  lcd.begin(16, 2); //
  pinMode (button, INPUT_PULLUP); // "_PULLUP" Active internal resistor
+ pinMode(9, OUTPUT); //Buzzer
  startMenu();
  Serial.begin (9600); //INICIALIZA O MONITOR SERIAL
 }
@@ -133,7 +149,7 @@ void loop() {
           if (key > 0){
             switch(key){
               case 3:
-                  if(selectedLevel > 1) selectedLevel--;
+                  if(selectedLevel > 0) selectedLevel--;
                 break;
               case 4:
                   if(selectedLevel < levels) selectedLevel++;
@@ -145,7 +161,7 @@ void loop() {
                 break;
             }
             lcd.setCursor(14,0);
-            lcd.print(selectedLevel);
+            lcd.print(selectedLevel + 1);
           } 
       }
   
@@ -167,12 +183,27 @@ void loop() {
       drawMoviment();
    }
 
-  if(gameOver && key == 5)
-  {
+  if(gameOver && key == 5){
      startMenu();
      delay(100);
   }
-    
+   
+}
+
+// Frequência correspondente - C = Do(131) D = Re(73.6) E = Mi(82.5) F = Fa(87.4) G = Sol(98) A = La(110) B = Si(61.8)
+void beep(unsigned char delayms) { //creating function
+  float notas[7] = {131, 73.6, 82.5, 87.4, 98, 110, 61.8};
+  if(gameOver){
+    for(int i = 0; i < 8; i++){
+       analogWrite(9, i); //Setting pin to high
+       delay(150); //Delaying 
+    }
+  }else {
+       analogWrite(9, 20); //Setting pin to high
+       delay(delayms); //Delaying 
+  }
+  analogWrite(9 ,0); //Setting pin to LOW
+  delay(delayms); //Delaying
 }
 
 void drawMatrix()
@@ -180,16 +211,12 @@ void drawMatrix()
   int cc=0;
   byte myChar[8];
   boolean special;
-  if (!gameOver)
-  {
+  if (!gameOver) {
    displayGame[pr][pc] = true;
-  for(int r=0;r<2;r++)
-  {
-    for(int c=0;c<16;c++)
-    {
+  for(int r = 0; r < 2; r++) {
+    for(int c = 0; c < 16;c++) {
       special = false;
-      for(int i=0;i<8;i++)
-      {
+      for(int i = 0; i < 8; i++) {
         byte b=B00000;
         if (displayGame[r*8+i][c*5+0]) {b+=B10000; special = true;}
         if (displayGame[r*8+i][c*5+1]) {b+=B01000; special = true;}
@@ -198,15 +225,13 @@ void drawMatrix()
         if (displayGame[r*8+i][c*5+4]) {b+=B00001; special = true;}
         myChar[i] = b;
       }
-      if (special)
-      {
+      if (special) {
         lcd.createChar(cc, myChar);
         lcd.setCursor(c,r);
         lcd.write(byte(cc));
         cc++;
       }
-      else
-      {
+      else {
         lcd.setCursor(c,r);
         if (levelz[selectedLevel][r][c]) lcd.write(255);
         else lcd.write(254);
@@ -216,10 +241,9 @@ void drawMatrix()
   }
 }
 
-void drawMoviment(){
-     timeNow = millis();
-     if (timeNow - timer > 1000 / gameSpeed)
-     {
+void drawMoviment() {
+     unsigned long timeNow = millis();
+     if (timeNow - timer > 1000 / gameSpeed) {
        moveSnake();
        drawMatrix();
        timer = millis();
@@ -228,26 +252,25 @@ void drawMoviment(){
 
 void moveHead(){
 
-  switch(dir) // 1 - Down, 2 - Up, 3 - Left, 4 - Right
-  {
+  switch(dir) {
     case 1: head->row--; break;
     case 2: head->row++; break;
     case 3: head->column--; break;
     case 4: head->column++; break;
     default : break;
   }
-if (head->column >= 80) head->column = 0;
-else if (head->column < 0) head->column = 79;
-else if (head->row >= 16) head->row = 0;
-else if (head->row < 0) head->row = 15;
+  
+  if (head->column >= 80) head->column = 0;
+  else if (head->column < 0) head->column = 79;
+  else if (head->row >= 16) head->row = 0;
+  else if (head->row < 0) head->row = 15;
 
  if (levelz[selectedLevel][head->row / 8][head->column / 5]) gameOver = true; // wall collision check
 
 // ######### Verify if has a snake collision ###########
   SnakeBody *p;
   p = tail;
-  while (p != head) // self collision
-  {
+  while (p != head) { // self collision
     if (p->row == head->row && p->column == head->column){
       gameOver = true;
       break;
@@ -257,12 +280,13 @@ else if (head->row < 0) head->row = 15;
 // #####################################################
 
   if (gameOver) {
+    beep(50);
     gameOverFunction();
   }else {
-    displayGame[head->row][head->column] = true;
-    if (head->row == pr && head->column == pc) // point pickup check
-    {
+    displayGame[head->row][head->column] = true; //new moviment
+    if (head->row == pr && head->column == pc) { // point pickup check
       collected++;
+      beep(50);
       if (gameSpeed < 25) gameSpeed += 3;
       newPoint();
     }
@@ -377,14 +401,15 @@ int get_key_moviment(){
     return k;
 }
 
+/*
 void printMatrix()
 {
   Serial.println();
   Serial.println();
   Serial.println();
-  for (int i=0;i<16;i++)
+  for (int i=0 ;i<16 ;i++)
   {
-    for (int j=0;j<80;j++)
+    for (int j=0; j<80 ;j++)
     {
       Serial.print(displayGame[i][j]);
       Serial.print(" ");
@@ -392,3 +417,4 @@ void printMatrix()
     Serial.println();
   }
 }
+*/
