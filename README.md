@@ -47,7 +47,7 @@
 
 
 
-![my snake diagram](https://res.cloudinary.com/elderlk/image/upload/v1561227241/circuit-diagram-snake_y0dhez.png "Snake Diagram")
+![my snake diagram](https://res.cloudinary.com/elderlk/image/upload/v1561227840/circuit-diagram-snake_lxfg3d.png "Snake Diagram")
 
 
 ## Fontes
